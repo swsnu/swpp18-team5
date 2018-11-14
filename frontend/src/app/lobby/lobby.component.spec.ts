@@ -3,7 +3,7 @@ import { LobbyComponent } from './lobby.component';
 import { Party, PartyType } from '../types/party';
 import { PartyService } from '../services/party.service';
 import { FormsModule } from '@angular/forms';
-import { Component, Input } from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import { User } from '../types/user';
 import { UserService } from '../services/user.service';
 import { Router } from '@angular/router';
@@ -37,7 +37,8 @@ const mockParties: Party[] = [
 
 @Component({ selector: 'app-lobby-list-item', template: '' })
 class MockLobbyListItemComponent {
-  @Input() party;
+  @Input() party: Party;
+  @Output() join: EventEmitter<Party> = new EventEmitter();
 }
 
 describe('LobbyComponent', () => {

@@ -1,4 +1,4 @@
-<button routerLink="/party/{{party.id}}">
+<button routerLink="/party/{{party.id}}" (click)="joinParty(party)">
   <span id="party-id">{{party.id}}</span>
   <span id="party-name">{{party.name}}</span>
 </button>

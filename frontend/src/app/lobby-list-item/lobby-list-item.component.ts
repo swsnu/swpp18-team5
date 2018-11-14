@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Party } from '../types/party';
 
 @Component({
@@ -10,9 +10,14 @@ export class LobbyListItemComponent implements OnInit {
 
   @Input() party: Party;
 
+  @Output() join: EventEmitter<Party> = new EventEmitter();
+
   constructor() { }
 
   ngOnInit() {
   }
 
+  joinParty(party: Party) {
+    this.join.emit(party);
+  }
 }

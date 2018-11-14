@@ -44,4 +44,11 @@ describe('LobbyListItemComponent', () => {
   it(`should have as name 'Name 1'`, () => {
     expect(fixture.nativeElement.querySelector('#party-name').textContent).toEqual(component.party.name);
   });
+
+  it( 'should emit joining party', () => {
+    component.join.subscribe(
+      party => expect(party).toEqual(mockLobbyListItem)
+    );
+    component.joinParty(mockLobbyListItem);
+  });
 });

@@ -33,4 +33,8 @@ export class LobbyComponent implements OnInit {
   createParty(): void {
     this.router.navigate(['/party/new']);
   }
+
+  onJoinParty(party: Party): void {
+    this.partyService.joinParty(party.id);
+  }
 }
