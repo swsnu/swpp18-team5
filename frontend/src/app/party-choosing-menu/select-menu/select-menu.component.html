@@ -1,0 +1,15 @@
+<div>
+  <ul>
+    <li *ngFor="let menu of menus">
+      <input type="radio" name="menu" [(ngModel)]="menuId" value="{{menu.id}}" />
+      {{menu.name}}, Price: {{menu.price}}
+    </li>
+  </ul>
+  <div>
+    Amount: <input type="number" [(ngModel)]="quantity" min="1" max="100" />
+  </div>
+  <div>
+    <button (click)="addRequest();">Add</button>
+    <button (click)="cancelRequest();">Cancel</button>
+  </div>
+</div>

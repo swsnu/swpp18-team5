@@ -22,6 +22,14 @@ export class PartyComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.state = {
+      id: -1,
+      phase: -1,
+      restaurant: null,
+      members: [],
+      menus: []
+    };
+
     this.joinParty();
     this.getParty();
     this.partyService.connectWebsocket();

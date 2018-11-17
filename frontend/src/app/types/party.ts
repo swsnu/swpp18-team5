@@ -1,3 +1,5 @@
+import { PartyMenu } from './menu';
+
 export enum PartyType {
   InGroup = 0,
   Private = 1,
@@ -26,5 +28,5 @@ export class PartyState {
   phase: PartyPhase;
   restaurant?: number;
   members: number[];
-  menus: [number, number][];
+  menus: PartyMenu[];
 }

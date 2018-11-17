@@ -1,15 +1,43 @@
 <div>
   <ul>
-    <li *ngFor="let menu of menus">
-      {{menu.name}}
-      <button *ngIf="randomVal && isAssigned(menu.id);" (click)="assign(menu.id);">
-        Assign
-      </button>
+    <li *ngFor="let partyMenu of menus">
+      {{getMenuNameById(partyMenu.menuId)}}, Count: {{partyMenu.quantity}}
+      <span *ngIf="isAssigned(partyMenu.userIds)">
+        <button *ngIf="partyMenu.userIds.length <= partyMenu.quantity"
+          (click)="updatePartyMenu(partyMenu, -1, true);">
+          Remove
+        </button>
+        <button *ngIf="partyMenu.userIds.length > partyMenu.quantity"
+          (click)="updatePartyMenu(partyMenu, 0, true);">
+          Unassign
+        </button>
+      </span>
+      <span *ngIf="!isAssigned(partyMenu.userIds)">
+        <button *ngIf="(partyMenu.userIds.length == 1 &&
+            partyMenu.quantity == 1) ||
+          partyMenu.userIds.length <= partyMenu.quantity"
+          (click)="updatePartyMenu(partyMenu, 1, false);">
+          Add
+        </button>
+        <button *ngIf="(partyMenu.userIds.length == 1 &&
+            partyMenu.quantity == 1) ||
+          partyMenu.userIds.length > partyMenu.quantity"
+          (click)="updatePartyMenu(partyMenu, 0, false);">
+          Assign
+        </button>
+      </span>
       <ul>
-        <li *ngFor="let assignee of getAssignee(menu.id, randomVal)">
+        <li *ngFor="let assignee of partyMenu.userIds">
           user id {{assignee}}
         </li>
       </ul>
     </li>
   </ul>
 </div>
+<button (click)="toggleAddMenu();">Add Menu</button>
+<app-select-menu *ngIf="showAddMenuDialog"
+  [menus]="menusOfRestaurant"
+  [loggedInUserId]="this.userService.signedInUserId"
+  (request)="requestAddMenu($event);"
+  (cancel)="cancelAddMenu($event);">
+</app-select-menu>

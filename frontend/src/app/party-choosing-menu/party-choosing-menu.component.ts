@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { PartyService } from '../services/party.service';
 import { UserService } from '../services/user.service';
-import { Menu } from '../types/menu';
+import { Menu, PartyMenu, PartyMenuUpdateRequest } from '../types/menu';
 
 @Component({
   selector: 'app-party-choosing-menu',
@@ -11,43 +11,87 @@ import { Menu } from '../types/menu';
 })
 export class PartyChoosingMenuComponent implements OnInit {
 
-  menus: Menu[];
-  randomVal: number;
+  menus: PartyMenu[];
+  menusOfRestaurant: Menu[];
+  showAddMenuDialog: boolean;
 
   constructor(private userService: UserService, private partyService: PartyService) { }
 
   ngOnInit() {
-    this.randomVal = 10;
+    this.menus = [];
+    this.menusOfRestaurant = [];
+    this.showAddMenuDialog = false;
+
     this.partyService.getMenus().then(menus => {
+      this.menusOfRestaurant = menus;
+    });
+    this.partyService.partyStateUpdate.subscribe(partyState => {
+      this.menus = partyState.menus;
+    });
+    this.partyService.partyMenuCreate.subscribe(menus => {
       this.menus = menus;
     });
-    this.partyService.partyMenuAssign.subscribe(() => {
-      this.randomVal = Math.random();
+
+    if (this.partyService.partyState.menus) {
+      this.menus = this.partyService.partyState.menus;
+    }
+    /*
+    this.partyService.partyMenuAssign.subscribe(updateRequest => {
     });
+    //*/
   }
 
-  getAssignee(id: number, randomVal: number) {
-    return this.partyService.partyState.menus
-      .filter(tuple => {
-        let [assigneeId, menuId] = tuple;
-        return menuId === id;
-      })
-      .map(tuple => {
-        let [assigneeId, menuId] = tuple;
-        return assigneeId;
-      })
+  getMenuNameById(id: number) {
+    const menu = this.menusOfRestaurant.filter(menuor => menuor.id === id);
+    if (menu.length) {
+      return menu[0].name;
+    }
+    return '';
   }
 
-  isAssigned(id: number) {
-    return !(this.partyService.partyState.menus
-      .filter(tuple => {
-        let [assigneeId, menuId] = tuple;
-        return menuId === id && assigneeId === this.userService.signedInUserId;
-      }).length);
+  // adding menus
+
+  requestAddMenu(event) {
+    this.partyService.createMenu(event);
+    this.showAddMenuDialog = false;
   }
 
-  assign(id: number) {
-    this.partyService.assignToMenu(id, this.userService.signedInUserId);
+  cancelAddMenu(event) {
+    this.showAddMenuDialog = false;
+  }
+
+  toggleAddMenu() {
+    this.showAddMenuDialog = !this.showAddMenuDialog;
+  }
+
+  isAssigned(userIds) {
+    return userIds.some(x => x === this.userService.signedInUserId);
+  }
+
+  updatePartyMenu(partyMenu, quantityDelta, removing) {
+    if (partyMenu.quantity + quantityDelta <= 0 ||
+      partyMenu.userIds.length + quantityDelta <= 0) {
+        this.partyService.updateMenu({
+          id: partyMenu.id,
+          quantityDelta: -partyMenu.quantity,
+          addUserIds: [],
+          removeUserIds: partyMenu.userIds
+        });
+    } else if (removing) {
+      this.partyService.updateMenu({
+        id: partyMenu.id,
+        quantityDelta: quantityDelta,
+        addUserIds: [],
+        removeUserIds: [this.userService.signedInUserId]
+      });
+    } else {
+      this.partyService.updateMenu({
+        id: partyMenu.id,
+        quantityDelta: quantityDelta,
+        addUserIds: [this.userService.signedInUserId],
+        removeUserIds: []
+      });
+    }
   }
 
 }

@@ -1,7 +1,9 @@
 import { Injectable, Output, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Menu } from '../types/menu';
+import {
+  Menu, PartyMenu, PartyMenuCreateRequest, PartyMenuUpdateRequest
+} from '../types/menu';
 import { Party, PartyState } from '../types/party';
 
 import { Observable, of, Subscription } from 'rxjs';
@@ -19,6 +21,7 @@ export class PartyService {
   webSocket$: WebSocketSubject<any>;
   subscription: Subscription;
 
+  isJoined: boolean;
   joinedPartyId: number;
   partyState: PartyState;
 
@@ -26,17 +29,20 @@ export class PartyService {
   @Output() partyLeave: EventEmitter<number>;
   @Output() partyNotJoined: EventEmitter<void>;
   @Output() partyStateUpdate: EventEmitter<PartyState>;
-  @Output() partyMenuAssign: EventEmitter<void>;
+  @Output() partyMenuCreate: EventEmitter<PartyMenu[]>;
+  @Output() partyMenuUpdate: EventEmitter<PartyMenu[]>;
 
   constructor(private http: HttpClient) {
     this.webSocket$ = undefined;
-    this.joinedPartyId = 0;
+    this.joinedPartyId = undefined;
+    this.isJoined = undefined;
 
     this.partyJoin = new EventEmitter();
     this.partyLeave = new EventEmitter();
     this.partyNotJoined = new EventEmitter();
     this.partyStateUpdate = new EventEmitter();
-    this.partyMenuAssign = new EventEmitter();
+    this.partyMenuCreate = new EventEmitter();
+    this.partyMenuUpdate = new EventEmitter();
   }
 
   async getParties(): Promise<Party[]> {
@@ -71,11 +77,13 @@ export class PartyService {
   }
 
   handleWebsocket(json: any): void {
+    console.log('ws:', json);
     if (json['type'] === 'party.join') {
       this.partyJoin.emit(json['user_id']);
     } else if (json['type'] === 'party.leave') {
       this.partyLeave.emit(json['user_id']);
     } else if (json['type'] === 'initial.not.joined') {
+      this.isJoined = false;
       if (this.joinedPartyId) {
         this.webSocket$.next({
           'command': 'party.join',
@@ -85,15 +93,49 @@ export class PartyService {
         this.partyNotJoined.emit();
       }
     } else if (json['type'] === 'state.update') {
+      this.isJoined = true;
       json['state']['restaurant'] = 1;
-      console.log(json['state']);
-      this.partyState = json['state'];
+      const menus = [];
+      for (const menuEntryId of Object.keys(json['state']['menus'])) {
+        const [menuId, quantity, userIds] = json['state']['menus'][menuEntryId];
+        menus.push({
+          id: +menuEntryId,
+          menuId: menuId,
+          quantity: quantity,
+          userIds: userIds
+        });
+      }
+      this.partyState = {
+        id: json['state']['id'],
+        phase: json['state']['phase'],
+        restaurant: json['state']['restaurant'],
+        members: json['state']['members'],
+        menus: menus
+      };
       this.joinedPartyId = json['state']['id'];
+      console.log(this.partyState);
       this.partyStateUpdate.emit(this.partyState);
-    } else if (json['type'] === 'menu.assign') {
-      console.log(json['user_id'], json['menu_id']);
-      this.partyState.menus.push([json['user_id'], json['menu_id']]);
-      this.partyMenuAssign.emit();
+    } else if (json['type'] === 'menu.create') {
+      this.partyState.menus.push({
+        id: json['menu_entry_id'],
+        menuId: json['menu_id'],
+        quantity: json['quantity'],
+        userIds: json['users']
+      });
+      this.partyMenuCreate.emit(this.partyState.menus);
+    } else if (json['type'] === 'menu.update') {
+      const menu_entries = this.partyState.menus.filter(
+        partyMenu => partyMenu.menuId === json['menu_entry_id']
+      );
+      if (menu_entries.length > 0) {
+        const menu_entry = menu_entries[0];
+        menu_entry.quantity += json['quantity'];
+        menu_entry.userIds = menu_entry.userIds
+          .concat(json['add_user_ids'])
+          .filter(userId => json['remove_user_ids'].every(
+            targetUserId => userId !== targetUserId
+          ));
+      }
     }
   }
 
@@ -102,11 +144,13 @@ export class PartyService {
       console.log('ws connected!');
       this.webSocket$ = new WebSocketSubject('ws://localhost:8000/ws/party/');
       this.subscription = this.webSocket$.subscribe(json => this.handleWebsocket(json));
-    } else {
+      this.isJoined = undefined;
+    } else if (this.isJoined === false && this.joinedPartyId) {
       this.webSocket$.next({
         'command': 'party.join',
         'party_id': this.joinedPartyId
       });
+      this.isJoined = undefined;
     }
   }
 
@@ -125,12 +169,24 @@ export class PartyService {
     return this.partyStateUpdate;
   }
 
-  assignToMenu(menuId: number, userId: number) {
-    console.log(menuId, userId);
+  createMenu(request: PartyMenuCreateRequest) {
     this.webSocket$.next({
-      'command': 'menu.assign',
-      'user_id': userId,
-      'menu_id': menuId
+      'command': 'menu.create',
+      'menu_id': request.menuId,
+      'quantity': request.quantity,
+      'users': request.users
     });
   }
+
+  updateMenu(request: PartyMenuUpdateRequest) {
+    this.webSocket$.next({
+      'command': 'menu.update',
+      'menu_entry_id': request.id,
+      'quantity': request.quantityDelta,
+      'add_user_ids': request.addUserIds,
+      'remove_user_ids': request.removeUserIds,
+    });
+    console.log(request);
+  }
+
 }
