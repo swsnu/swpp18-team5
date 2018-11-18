@@ -1,5 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { FormsModule } from '@angular/forms';
+
 import { SelectMenuComponent } from './select-menu.component';
 
 describe('SelectMenuComponent', () => {
@@ -8,7 +10,10 @@ describe('SelectMenuComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SelectMenuComponent ]
+      imports: [
+        FormsModule,
+      ],
+      declarations: [ SelectMenuComponent ],
     })
     .compileComponents();
   }));
