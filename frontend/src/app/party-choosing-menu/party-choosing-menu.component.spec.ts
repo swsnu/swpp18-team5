@@ -17,10 +17,10 @@ const mockPartyMenu1 = { id: 1, menuId: 1, quantity: 2, userIds: [1] };
 const mockPartyMenu2 = { id: 2, menuId: 2, quantity: 2, userIds: [1, 2] };
 const mockPartyMenu3 = { id: 3, menuId: 3, quantity: 1, userIds: [2] };
 
-const mockMenu1 = { id: 1, name: "Mock Menu 1", price: -120 };
+const mockMenu1 = { id: 1, name: 'Mock Menu 1', price: -120 };
 
 class MockUserService {
-  signedInUserId: number = 1;
+  signedInUserId = 1;
 }
 
 class MockPartyService {
@@ -89,7 +89,7 @@ describe('PartyChoosingMenuComponent', () => {
     fixture.detectChanges();
 
     expect(component).toBeTruthy();
-  })
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(PartyChoosingMenuComponent);
