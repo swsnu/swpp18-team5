@@ -26,8 +26,7 @@ export class SelectMenuComponent implements OnInit {
   }
 
   addRequest() {
-    const requestMenu: number = +this.menuId;
-    console.log(requestMenu);
+    const requestMenu: number = this.menuId === undefined ? undefined : +this.menuId;
     if (requestMenu === undefined || !this.quantity) {
       // TODO: showing error
     } else {
