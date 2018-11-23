@@ -60,6 +60,15 @@ export class MockPartyPaymentComponent {
 
 }
 
+class MockPartyService {
+  partyStateUpdate: EventEmitter<any> = new EventEmitter();
+
+  getParty() {
+    return new Promise(r => r(mockParty));
+  }
+
+  connectWebsocket() { }
+}
 
 describe('PartyComponent', () => {
   let component: PartyComponent;
@@ -69,7 +78,7 @@ describe('PartyComponent', () => {
 
   beforeEach(async(() => {
     const partyServiceSpy = jasmine.createSpyObj('PartyService', [
-      'getParty', 'joinParty', 'leaveParty', 'connectWebsocket', 'getPartyStateUpdate'
+      'getParty', 'joinParty', 'leaveParty', 'connectWebsocket',
     ]);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -83,7 +92,7 @@ describe('PartyComponent', () => {
         MockPartyPaymentComponent,
       ],
       providers: [
-        { provide: PartyService, useValue: partyServiceSpy },
+        { provide: PartyService, useClass: MockPartyService },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useClass: MockActivatedRoute },
       ]
@@ -91,8 +100,6 @@ describe('PartyComponent', () => {
       .compileComponents();
 
     partyService = TestBed.get(PartyService);
-    partyService.getParty.and.returnValue(new Promise(r => r(mockParty)));
-    partyService.getPartyStateUpdate.and.returnValue(new EventEmitter());
 
     router = TestBed.get(Router);
   }));

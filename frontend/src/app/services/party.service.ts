@@ -125,16 +125,19 @@ export class PartyService {
       this.partyMenuCreate.emit(this.partyState.menus);
     } else if (json['type'] === 'menu.update') {
       const menu_entries = this.partyState.menus.filter(
-        partyMenu => partyMenu.menuId === json['menu_entry_id']
+        partyMenu => partyMenu.id === json['menu_entry_id']
       );
       if (menu_entries.length > 0) {
         const menu_entry = menu_entries[0];
         menu_entry.quantity += json['quantity'];
         menu_entry.userIds = menu_entry.userIds
-          .concat(json['add_user_ids'])
+          .concat(json['add_user_ids']);
+        menu_entry.userIds = menu_entry.userIds
           .filter(userId => json['remove_user_ids'].every(
             targetUserId => userId !== targetUserId
           ));
+        console.log(this.partyState.menus);
+        this.partyMenuUpdate.emit(this.partyState.menus);
       }
     }
   }
@@ -163,10 +166,6 @@ export class PartyService {
 
     this.subscription.unsubscribe();
     this.webSocket$ = undefined;
-  }
-
-  getPartyStateUpdate() {
-    return this.partyStateUpdate;
   }
 
   createMenu(request: PartyMenuCreateRequest) {
