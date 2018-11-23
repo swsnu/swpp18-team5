@@ -6,7 +6,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { AuthGuard } from './auth.guard';
 import { UserService } from '../services/user.service';
 
-class MockSnapshot extends RouterStateSnapshot {
+class MockSnapshot {
   url: string;
   constructor(urlString: string) {
     this.url = urlString;
@@ -19,10 +19,14 @@ class MockSnapshot extends RouterStateSnapshot {
 describe('AuthGuard', () => {
   let userService: jasmine.SpyObj<UserService>;
   let router: jasmine.SpyObj<Router>;
+  let mockSnapshot;
 
   beforeEach(() => {
     const userServiceSpy = jasmine.createSpyObj('UserService', ['verifyUser']);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    mockSnapshot = jasmine.createSpyObj<RouterStateSnapshot>(
+      'RouterStateSnapshot', ['toString', 'url']
+    );
     TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
@@ -31,7 +35,8 @@ describe('AuthGuard', () => {
       providers: [
         AuthGuard,
         { provide: Router, useValue: routerSpy },
-        { provide: UserService, useValue: userServiceSpy }
+        { provide: UserService, useValue: userServiceSpy },
+        { provide: RouterStateSnapshot, useValue: mockSnapshot }
       ]
     });
     userService = TestBed.get(UserService);
@@ -45,7 +50,8 @@ describe('AuthGuard', () => {
   it('should redirect to sign-in if not requested sign-in when not logged in',
     inject([AuthGuard], (guard: AuthGuard) => {
       userService.verifyUser.and.returnValue(new Promise(r => r(false)));
-      (guard.canActivate(undefined, new MockSnapshot('/lobby')) as Promise<boolean>)
+      mockSnapshot.url = '/lobby';
+      (guard.canActivate(undefined, mockSnapshot) as Promise<boolean>)
       .then(value => {
         expect(value).toBeTruthy();
         expect(router.navigate).toHaveBeenCalledWith(['/sign-in']);
@@ -56,7 +62,8 @@ describe('AuthGuard', () => {
   it('should not redirect if not requested sign-in when logged in',
     inject([AuthGuard], (guard: AuthGuard) => {
       userService.verifyUser.and.returnValue(new Promise(r => r(true)));
-      (guard.canActivate(undefined, new MockSnapshot('/lobby')) as Promise<boolean>)
+      mockSnapshot.url = '/lobby';
+      (guard.canActivate(undefined, mockSnapshot) as Promise<boolean>)
       .then(value => {
         expect(value).toBeTruthy();
         expect(router.navigate).toHaveBeenCalledTimes(0);
@@ -67,7 +74,8 @@ describe('AuthGuard', () => {
   it('should redirect to sign-in if requested sign-in when logged in',
     inject([AuthGuard], (guard: AuthGuard) => {
       userService.verifyUser.and.returnValue(new Promise(r => r(true)));
-      (guard.canActivate(undefined, new MockSnapshot('/sign-in')) as Promise<boolean>)
+      mockSnapshot.url = '/sign-in';
+      (guard.canActivate(undefined, mockSnapshot) as Promise<boolean>)
       .then(value => {
         expect(value).toBeTruthy();
         expect(router.navigate).toHaveBeenCalledWith(['/lobby']);
@@ -78,7 +86,8 @@ describe('AuthGuard', () => {
   it('should not redirect if requested sign-in when not logged in',
     inject([AuthGuard], (guard: AuthGuard) => {
       userService.verifyUser.and.returnValue(new Promise(r => r(false)));
-      (guard.canActivate(undefined, new MockSnapshot('/sign-in')) as Promise<boolean>)
+      mockSnapshot.url = '/sign-in';
+      (guard.canActivate(undefined, mockSnapshot) as Promise<boolean>)
       .then(value => {
         expect(value).toBeTruthy();
         expect(router.navigate).toHaveBeenCalledTimes(0);

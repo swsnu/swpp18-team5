@@ -222,11 +222,11 @@ describe('PartyService', () => {
       'quantity': 3,
       'users': [1],
     });
-    let expected = getMockPartyState();
+    const expected = getMockPartyState();
     expected.menus = [
       { id: 100, menuId: 1, quantity: 2, userIds: [1, 2] },
       { id: 101, menuId: 2, quantity: 3, userIds: [1] },
-    ]
+    ];
 
     expect(partyService.partyState).toEqual(expected);
     expect(partyService.partyMenuCreate.emit).toHaveBeenCalledWith(expected.menus);
