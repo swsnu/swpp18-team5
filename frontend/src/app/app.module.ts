@@ -16,6 +16,7 @@ import { PartyOrderingComponent } from './party-ordering/party-ordering.componen
 import { PartyOrderedComponent } from './party-ordered/party-ordered.component';
 import { PartyPaymentComponent } from './party-payment/party-payment.component';
 import { SelectMenuComponent } from './party-choosing-menu/select-menu/select-menu.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,8 @@ import { SelectMenuComponent } from './party-choosing-menu/select-menu/select-me
     HttpClientXsrfModule.withOptions({
       cookieName: 'csrftoken',
       headerName: 'X-CSRFToken'
-    })
+    }),
+    BrowserAnimationsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
