@@ -95,4 +95,9 @@ describe('LobbyComponent', () => {
       expect(component.parties).toEqual(mockParties);
     });
   }));
+
+  it('createParty should navigate to /party/new', async(() => {
+    component.createParty();
+    expect(router.navigate).toHaveBeenCalledWith(['/party/new']);
+  }));
 });

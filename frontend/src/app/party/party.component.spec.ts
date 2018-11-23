@@ -7,7 +7,7 @@ import { Observable, of } from 'rxjs';
 
 import { PartyComponent } from './party.component';
 import { PartyService } from '../services/party.service';
-import { Party, PartyType } from '../types/party';
+import { Party, PartyType, PartyState } from '../types/party';
 
 const mockParty: Party = {
   id: 3,
@@ -17,6 +17,16 @@ const mockParty: Party = {
   leaderId: 3,
   since: 'Since 3',
   memberCount: 3,
+};
+
+const mockPartyState: PartyState = {
+  id: 1,
+  phase: 1,
+  restaurant: 1,
+  members: [1, 2],
+  menus: [
+    { id: 100, menuId: 1, quantity: 2, userIds: [1, 2] },
+  ]
 };
 
 class MockParamMap {
@@ -67,6 +77,8 @@ class MockPartyService {
     return new Promise(r => r(mockParty));
   }
 
+  leaveParty() { }
+
   connectWebsocket() { }
 }
 
@@ -113,4 +125,18 @@ describe('PartyComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('leaveParty should request leave party and navigate', () => {
+    spyOn(partyService, 'leaveParty');
+    component.leaveParty();
+    expect(partyService.leaveParty).toHaveBeenCalledTimes(1);
+  });
+
+  it('should change state if emitted PartyState via partyStateUpdate', async(() => {
+    partyService.partyStateUpdate.emit(mockPartyState);
+    fixture.whenStable().then(() => {
+      expect(component.state).toEqual(mockPartyState);
+    });
+  }));
+
 });
