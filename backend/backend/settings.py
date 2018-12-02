@@ -45,7 +45,11 @@ except NameError:
 DEBUG = bool(os.getenv('DEBUG', True))
 
 ALLOWED_HOSTS = [os.getenv('ALLOWED_HOST', 'localhost')]
-CORS_ORIGIN_WHITELIST = ALLOWED_HOSTS[:]
+
+if DEBUG:
+    CORS_ORIGIN_ALLOW_ALL = True
+else:
+    CORS_ORIGIN_WHITELIST = ALLOWED_HOSTS[:]
 
 # Application definition
 
