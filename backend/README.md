@@ -9,7 +9,7 @@ $ sudo nano /srv/moyobob/backend/env
 REDIS_HOST=redis
 REDIS_PORT=6379
 DEBUG=True
-ALLOWED_HOST=localhost
+ALLOWED_HOSTS=localhost
 
 $ docker-compose run backend python manage.py migrate
 $ docker-compose up -d

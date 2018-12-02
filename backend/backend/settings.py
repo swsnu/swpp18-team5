@@ -44,7 +44,7 @@ except NameError:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.getenv('DEBUG', True))
 
-ALLOWED_HOSTS = [os.getenv('ALLOWED_HOST', 'localhost')]
+ALLOWED_HOSTS = list(os.getenv('ALLOWED_HOSTS', 'localhost').split(','))
 
 if DEBUG:
     CORS_ORIGIN_ALLOW_ALL = True
