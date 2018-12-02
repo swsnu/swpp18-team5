@@ -45,12 +45,13 @@ except NameError:
 DEBUG = bool(os.getenv('DEBUG', True))
 
 ALLOWED_HOSTS = [os.getenv('ALLOWED_HOST', 'localhost')]
-
+CORS_ORIGIN_WHITELIST = ALLOWED_HOSTS[:]
 
 # Application definition
 
 INSTALLED_APPS = [
     'channels',
+    'corsheaders',
     'cauth.apps.CauthConfig',
     'websocket.apps.WebsocketConfig',
     'api.apps.ApiConfig',
@@ -65,6 +66,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
